@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) 2026 Spencer Deven (@Aleblazer)
+ * SPDX-License-Identifier: MIT
+ *
+ * voxel_volume: ten SH1107 128x128 panels on a Pro Micro footprint nRF52840
+ * (nice!nano and compatibles), split over two SPI buses.
+ *
+ *   bank A (z0..z4)  SPIM1: SCK D16 (P1.13)  MOSI D14 (P0.10)  CS D0 D1 D2 D3 D4
+ *   bank B (z5..z9)  SPIM3: SCK D18 (P0.31)  MOSI D19 (P0.29)  CS D5 D6 D7 D8 D9
+ *   D/C   D15 (P1.11)   shared by all panels
+ *   RESET D20 (P0.02)   shared by all panels
+ *   VPP enable D21 (P1.15), optional
+ *   D10 spare
+ *
+ * SPIM3 is used for the second bank because SPIM0 shares its instance with
+ * I2C0 on the nRF52840. Add this shield after the keyboard shield:
+ *   shield: my_dongle voxel_volume
+ */
+
+#include <behaviors/voxel.dtsi>
+
+&pinctrl {
+    voxel_spi1_default: voxel_spi1_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 10)>;
+        };
+    };
+
+    voxel_spi1_sleep: voxel_spi1_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 10)>;
+            low-power-enable;
+        };
+    };
+
+    voxel_spi3_default: voxel_spi3_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 31)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 29)>;
+        };
+    };
+
+    voxel_spi3_sleep: voxel_spi3_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 31)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 29)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi1 {
+    compatible = "nordic,nrf-spim";
+    status = "okay";
+    pinctrl-0 = <&voxel_spi1_default>;
+    pinctrl-1 = <&voxel_spi1_sleep>;
+    pinctrl-names = "default", "sleep";
+    /delete-property/ cs-gpios;
+
+    voxel_bank_a: voxel_bank@0 {
+        compatible = "aleblazer,voxel-sh1107-bank";
+        reg = <0>;
+        spi-max-frequency = <4000000>;
+        panel-cs-gpios = <&pro_micro 0 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 1 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 2 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 3 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 4 GPIO_ACTIVE_LOW>;
+        dc-gpios = <&pro_micro 15 GPIO_ACTIVE_HIGH>;
+        reset-gpios = <&pro_micro 20 GPIO_ACTIVE_LOW>;
+    };
+};
+
+&spi3 {
+    compatible = "nordic,nrf-spim";
+    status = "okay";
+    pinctrl-0 = <&voxel_spi3_default>;
+    pinctrl-1 = <&voxel_spi3_sleep>;
+    pinctrl-names = "default", "sleep";
+    /delete-property/ cs-gpios;
+
+    voxel_bank_b: voxel_bank@0 {
+        compatible = "aleblazer,voxel-sh1107-bank";
+        reg = <0>;
+        spi-max-frequency = <4000000>;
+        panel-cs-gpios = <&pro_micro 5 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 6 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 7 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 8 GPIO_ACTIVE_LOW>,
+                         <&pro_micro 9 GPIO_ACTIVE_LOW>;
+        dc-gpios = <&pro_micro 15 GPIO_ACTIVE_HIGH>;
+        reset-gpios = <&pro_micro 20 GPIO_ACTIVE_LOW>;
+    };
+};
+
+/ {
+    voxel_volume: voxel_volume {
+        compatible = "aleblazer,voxel-sh1107";
+        banks = <&voxel_bank_a &voxel_bank_b>;
+        vpp-en-gpios = <&pro_micro 21 GPIO_ACTIVE_HIGH>;
+        contrast = <0xA2>;
+        /* Orientation fixes once the stack is mounted: */
+        /* flip-x; flip-y; flip-z; swap-xy; */
+    };
+};

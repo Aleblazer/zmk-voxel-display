@@ -1,0 +1,12 @@
+if SHIELD_VOXEL_VOLUME
+
+config SPI
+    default y
+
+config GPIO
+    default y
+
+config ZMK_VOXEL_DISPLAY
+    default y
+
+endif

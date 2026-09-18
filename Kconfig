@@ -1,0 +1,75 @@
+# Copyright (c) 2026 Spencer Deven (@Aleblazer)
+# SPDX-License-Identifier: MIT
+
+menuconfig ZMK_VOXEL_DISPLAY
+    bool "Volumetric SH1107 OLED display (stacked panels, one or more SPI buses)"
+    default y
+    depends on DT_HAS_ALEBLAZER_VOXEL_SH1107_ENABLED
+    select SPI
+    select GPIO
+    help
+      Drives a stack of SH1107 128x128 OLED panels as a 128x128xN voxel
+      volume. Panels are grouped into banks; each bank is an SPI device node
+      with its own chip-select list, and banks transfer in parallel.
+
+if ZMK_VOXEL_DISPLAY
+
+config ZMK_VOXEL_BANK_THREAD_STACK_SIZE
+    int "Stack size of each bank transfer thread"
+    default 1024
+
+config ZMK_VOXEL_FRAME_THREAD_STACK_SIZE
+    int "Stack size of the frame scheduler thread"
+    default 1024
+
+config ZMK_VOXEL_THREAD_PRIORITY
+    int "Priority of the transfer threads (preemptible)"
+    default 10
+    help
+      Kept below the Bluetooth and USB threads so display traffic never
+      delays HID reports.
+
+config ZMK_VOXEL_BLANK_ON_IDLE
+    bool "Blank the volume when ZMK reports idle, wake it on activity"
+    default y
+    help
+      Uses the global ZMK idle timeout (CONFIG_ZMK_IDLE_TIMEOUT).
+
+config ZMK_VOXEL_ANIM
+    bool "Built-in test animations"
+    default y
+    help
+      Keypress glyphs flying rear to front, a retro parallax scene and a
+      bouncing block, selectable at runtime with the &voxel behavior.
+
+if ZMK_VOXEL_ANIM
+
+config ZMK_VOXEL_ANIM_THREAD_STACK_SIZE
+    int "Stack size of the animation thread"
+    default 2048
+
+config ZMK_VOXEL_ANIM_FRAME_MS
+    int "Animation drawing interval in milliseconds"
+    default 33
+
+config ZMK_VOXEL_ANIM_DEFAULT
+    int "Animation at boot (0 off, 1 keyfall, 2 parallax, 3 bounce)"
+    default 1
+    range 0 3
+
+config ZMK_VOXEL_KEYFALL_MAX
+    int "Maximum glyphs in flight"
+    default 24
+
+endif # ZMK_VOXEL_ANIM
+
+config ZMK_VOXEL_BEHAVIOR
+    bool "&voxel keymap behavior"
+    default y
+    depends on DT_HAS_ALEBLAZER_BEHAVIOR_VOXEL_ENABLED
+
+module = ZMK_VOXEL
+module-str = zmk_voxel
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # ZMK_VOXEL_DISPLAY

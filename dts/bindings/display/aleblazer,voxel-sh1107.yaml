@@ -1,0 +1,45 @@
+# Copyright (c) 2026 Spencer Deven (@Aleblazer)
+# SPDX-License-Identifier: MIT
+
+description: |
+  Volumetric display made of stacked SH1107 128x128 OLED panels. The panels
+  are grouped into banks (see aleblazer,voxel-sh1107-bank); banks sit on
+  separate SPI buses and are refreshed in parallel. Layer z = 0 is the first
+  panel of the first bank and counts up through each bank's panel-cs-gpios
+  list in order.
+
+compatible: "aleblazer,voxel-sh1107"
+
+properties:
+  banks:
+    type: phandles
+    required: true
+    description: Bank nodes in z order, front-most first.
+
+  vpp-en-gpios:
+    type: phandle-array
+    description: |
+      Optional enable line for the external panel supply (VPP, 7-16.5 V,
+      13.5 V nominal). Driven active while the display is on so the SH1107
+      power sequence is honoured. Omit if the supply is always on.
+
+  contrast:
+    type: int
+    default: 162
+    description: SH1107 contrast register (0xA2 is the panel spec at 13.5 V).
+
+  flip-x:
+    type: boolean
+    description: SH1107 segment remap (mirrors x on every panel).
+
+  flip-y:
+    type: boolean
+    description: Reverse COM scan direction (mirrors y on every panel).
+
+  flip-z:
+    type: boolean
+    description: Reverse the layer order (front becomes rear).
+
+  swap-xy:
+    type: boolean
+    description: Transpose x and y in software.

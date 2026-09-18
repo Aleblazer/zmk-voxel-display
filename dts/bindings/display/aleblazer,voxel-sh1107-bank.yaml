@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Spencer Deven (@Aleblazer)
+# SPDX-License-Identifier: MIT
+
+description: |
+  One group of SH1107 panels sharing an SPI bus. Must be a child of an SPI
+  controller. The controller's cs-gpios are not used; every panel's chip
+  select is listed in panel-cs-gpios and driven by the driver, which also
+  asserts them all at once to broadcast commands.
+
+  D/C and RESET may be shared between banks (the driver keeps every bank in
+  the same phase, commands or data, at any moment).
+
+compatible: "aleblazer,voxel-sh1107-bank"
+
+include: spi-device.yaml
+
+properties:
+  panel-cs-gpios:
+    type: phandle-array
+    required: true
+    description: Chip select of each panel in this bank, in z order.
+
+  dc-gpios:
+    type: phandle-array
+    required: true
+    description: Data/command (A0) line of the panels in this bank.
+
+  reset-gpios:
+    type: phandle-array
+    description: RES line of the panels in this bank.

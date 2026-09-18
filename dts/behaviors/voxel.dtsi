@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) 2026 Spencer Deven (@Aleblazer)
+ * SPDX-License-Identifier: MIT
+ *
+ * Include from a keymap:  #include <behaviors/voxel.dtsi>
+ * then use e.g.  &voxel VX_NEXT
+ */
+#include <dt-bindings/zmk_voxel/voxel.h>
+
+/ {
+    behaviors {
+        voxel: behavior_voxel {
+            compatible = "aleblazer,behavior-voxel";
+            #binding-cells = <1>;
+            display-name = "Voxel Display";
+        };
+    };
+};
