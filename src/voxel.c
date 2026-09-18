@@ -108,7 +108,7 @@ DT_FOREACH_STATUS_OKAY(aleblazer_voxel_sh1107_bank, VOXEL_BANK_DEFINE)
 static struct voxel_bank *const banks[] = {DT_FOREACH_PROP_ELEM(VOXEL_NODE, banks, VOXEL_BANK_PTR)};
 #define BANK_COUNT ARRAY_SIZE(banks)
 
-#define VOXEL_BANK_LEN(node_id, prop, idx) DT_PROP_LEN(DT_PHANDLE_BY_IDX(node_id, prop, idx)) +
+#define VOXEL_BANK_LEN(node_id, prop, idx) DT_PROP_LEN(DT_PHANDLE_BY_IDX(node_id, prop, idx), panel_cs_gpios) +
 #define VOXEL_DEPTH (DT_FOREACH_PROP_ELEM(VOXEL_NODE, banks, VOXEL_BANK_LEN) 0)
 BUILD_ASSERT(VOXEL_DEPTH >= 1 && VOXEL_DEPTH <= 32, "unsupported panel count");
 
